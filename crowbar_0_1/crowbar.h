@@ -19,7 +19,7 @@ typedef enum {
 } CompileError;
 
 typedef enum {
-	VARIABLE_NOT_FOUND_ERR = 1,
+	VARIABLE_NOT_FOUND_ERR = 1, /* 假如忘记进行初始化时，变量中被置入0的概率是非常高的，那么枚举类型如果从1开始的话，可以更早地发现异常状态*/
 	FUNCTION_NOT_FOUND_ERR,
 	ARGUMENT_TOO_MANY_ERR,
 	ARGUMENT_TOO_FEW_ERR,
@@ -36,7 +36,7 @@ typedef enum {
 	GLOBAL_VARIABLE_NOT_FOUND_ERR,
 	GLOBAL_STATEMENT_IN_TOPLEVEL_ERR,
 	BAD_OPERATOR_FOR_STRING_ERR,
-	RUNTIME_ERROR_COUNT_PLUS_1
+	RUNTIME_ERROR_COUNT_PLUS_1 /* 有了 COMPILE_ERROR_COUNT_PLUS_1 这个可变元素，就可以借助其遍历所有枚举元素，并在后续程序中利用这一特性进行更丰富的处理 */
 } RuntimeError;
 
 typedef enum {
@@ -55,28 +55,28 @@ typedef struct {
 typedef struct Expression_tag Expression;
 
 typedef enum {
-	BOOLEAN_EXPRESSION = 1,
-	INT_EXPRESSION,
-	DOUBLE_EXPRESSION,
-	STRING_EXPRESSION,
-	IDENTIFIER_EXPRESSION,
-	ASSIGN_EXPRESION,
-	ADD_EXPRESSION,
-	SUB_EXPRESSION,
-	MUL_EXPRESSION,
-	DIV_EXPRESSION,
-	MOD_EXPRESSION,
-	EQ_EXPRESSION,
-	NE_EXPRESSION,
-	GT_EXPRESSION,
-	GE_EXPRESSION,
-	LT_EXPRESSION,
-	LE_EXPRESSION,
-	LOGICAL_AND_EXPRESSION,
-	LOGICAL_OR_EXPRESSION,
-	MINUS_EXPRESSION,
-	FUNCTION_CALL_EXPRESSION,
-	NULL_EXPRESSION,
+	BOOLEAN_EXPRESSION = 1, 	/* 布尔型常量 */
+	INT_EXPRESSION,				/* 整数型常量 */
+	DOUBLE_EXPRESSION,			/* 实数型常量 */
+	STRING_EXPRESSION,			/* 字符串型常量 */
+	IDENTIFIER_EXPRESSION,		/* 变量 */
+	ASSIGN_EXPRESION,			/* 赋值表达式 */
+	ADD_EXPRESSION,				/* 加法表达式 */
+	SUB_EXPRESSION,				/* 减法表达式 */
+	MUL_EXPRESSION,				/* 乘法表达式 */
+	DIV_EXPRESSION,				/* 除法表达式 */
+	MOD_EXPRESSION,				/* 求余表达式 */
+	EQ_EXPRESSION,				/* == */
+	NE_EXPRESSION,				/* != */
+	GT_EXPRESSION,				/* > */
+	GE_EXPRESSION,				/* >= */
+	LT_EXPRESSION,				/* < */　
+	LE_EXPRESSION,				/* <= */　
+	LOGICAL_AND_EXPRESSION,		/* && */　
+	LOGICAL_OR_EXPRESSION,		/* || */　
+	MINUS_EXPRESSION,			/* 单目取负 */　
+	FUNCTION_CALL_EXPRESSION,	/* 函数调用表达式 */　
+	NULL_EXPRESSION,			/* null 表达式 */　
 	EXPRESSION_TYPE_COUNT_PLUS_1
 } ExpressionType;
 
@@ -85,6 +85,10 @@ typedef enum {
    || (operator) == MUL_EXPRESSION || (operator) == DIV_EXPRESSION\
    || (operator) == MOD_EXPRESSION)
    
+typedef struct {
+	Expression *left;
+	Expression *right;
+} BinaryExpression;
 
 
 
@@ -127,6 +131,37 @@ typedef struct StatementList_tag {
 typedef struct {
 	StatementList		*statement_list;
 } Block;
+
+typedef struct {
+	Expression		*condition;		/* 条件表达式 */
+	Block			*block;			/* 可执行块 */
+} WhileStatement;
+
+
+typedef enum {
+	EXPRESSION_STATEMENT = 1;
+	GLOBAL_STATEMENT,
+	IF_STATEMENT,
+	WHILE_STATEMENT,
+	FOR_STATEMENT,
+	RETURN_STATEMENT,
+	BREAK_STATEMENT,
+	CONTINUE_STATEMENT,
+	STATEMENT_TYPE_COUNT_PLUS_1
+} StatementType;
+
+struct Statement_tag {
+	StatementType		type;
+	int					line_number;
+	union {
+		Expression		*expression_s;
+		GlobalStatement global_s;
+		IfStatement		if_s;
+		WhileStatement	while_s;
+		ForStatement	for_s;
+		ReturnStatement	return_s;
+	} u;
+};
 
 typedef struct ParameterList_tag {
 	char		*name;
